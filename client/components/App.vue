@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <router-view></router-view>
-    <vue-progress-bar></vue-progress-bar>
   </div>
 </template>
 <style>
@@ -12,23 +11,38 @@
   }
 </style>
 <script>
+  import {mapState} from 'vuex'
   export default {
-    mounted () {
-      this.$Progress.finish()
-    },
-    created () {
-      this.$Progress.start();
+    mounted() {
       this.$router.beforeEach((to, from, next) => {
-        if (to.meta.progress !== undefined) {
-          let meta = to.meta.progress;
-          this.$Progress.parseMeta(meta)
+        if (to.meta.requiresAuth) {
+          if (this.tokenStore.access_token) {
+            next();
+          } else {
+            next({name: 'home'});
+            console.log('not logged in')
+          }
         }
-        this.$Progress.start();
-        next()
       });
       this.$router.afterEach((to, from) => {
-        this.$Progress.finish()
-      })
+
+      });
+
+
+      window.axios.interceptors.request.use({headers: {'X-Requested-With': 'XMLHttpRequest'}});
+
+    },
+
+    data()
+    {
+      return {}
+    }
+    ,
+    computed: {
+      ...
+        mapState({
+          tokenStore: state => state.tokenStore
+        })
     }
   }
 </script>
